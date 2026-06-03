@@ -1,0 +1,1 @@
+Copernicus Sentinel data 2022. SAR image retrieved from Copernicus Browser https://browser.dataspace.copernicus.eu/ 2024-12-12
