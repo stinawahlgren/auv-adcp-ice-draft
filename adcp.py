@@ -55,7 +55,7 @@ def distance_to_interface(ds, echo_intensity = 'intensity', range = 'along_beam_
 def refine_peaks(values, dim, index_peak):
     """
     Refine position of peak to aquire sub-cell resolution, using a 3-point quadratic
-    interpolation (see equation 1 in Wahlgren et al 2025). This function returns an 
+    interpolation (see equation 1 in Wahlgren et al 2026). This function returns an 
     adjustment value between -0.5 and 0.5, and the refined peak location is at the 
     detected peak + the adjustment value times the grid size.
     
