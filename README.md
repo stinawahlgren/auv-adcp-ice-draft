@@ -49,4 +49,5 @@ ADCP echo intensity can be downloaded from https://doi.org/10.5878/w1mp-x897 The
   - NBP2202_011
   - NBP2202_014
 
-- **data/auxiliary/background:** The provided SAR imagery over Dotson ice shelf was retrieved from Copernicus Browser https://browser.dataspace.copernicus.eu/ 2024-12-12.
+- **data/auxiliary/background:** The provided SAR image over Dotson ice shelf was retrieved from Copernicus Browser https://browser.dataspace.copernicus.eu/ 2024-12-12. It was converted from a georeferenced tiff-file to netcdf using `gdal.translate` from the python package `osgeo`.
+ 
