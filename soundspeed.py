@@ -8,7 +8,7 @@ from scipy.optimize import curve_fit
 from scipy.integrate import quad as scipy_integrate_quad
 from more_itertools import ilen, always_iterable
 
-from density import p_from_z
+from depth_pressure_conversions import pressure_from_depth
 
 def sound_speed_in_DIS_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  make_plot = True):
     """
@@ -108,8 +108,8 @@ def sound_speed_harmonic_mean(depth1, depth2, profile, N=10):
         profile : Sound speed profile (a function that takes pressure (dbar) as input)
         N       : Number of points used to compute average
     """
-    p1 = p_from_z(-depth1)
-    p2 = p_from_z(-depth2)
+    p1 = pressure_from_depth(depth1)
+    p2 = pressure_from_depth(depth2)
     ps = np.linspace(p1, p2, N) 
 
     cs = profile(ps)
@@ -134,12 +134,12 @@ def refine_vertical_distance(t0, sensor_depth, h0, theta0, sound_speed_model_wrt
         """
         Eq 8 in Hovem 2013
         """
-        p = p_from_z(z)
+        p = pressure_from_depth(-z)
         c = sound_speed_model_wrt_p(p)        
         return 1/(c*np.sqrt(1-(xi*c)**2))
 
     z0 = -sensor_depth
-    c0 = sound_speed_model_wrt_p(p_from_z(z0))
+    c0 = sound_speed_model_wrt_p(pressure_from_depth(-z0))
     xi = np.cos(np.radians(theta0))/c0
     c_av = sound_speed_harmonic_mean(z0, z0+h0, sound_speed_model_wrt_p)
 
