@@ -24,6 +24,8 @@ def find_time_lag(t1, f1, t2, f2, time_step = 0.25, trim = 3600, interpolation_m
     tmin = np.max([t1[0], t2[0]])   + np.timedelta64(trim,'s')
     tmax = np.min([t1[-1], t2[-1]]) - np.timedelta64(trim,'s')
     time = date_range(start=tmin, end=tmax, freq=f'{time_step}s')
+    if len(time) < 3:
+        raise ValueError("Signals don't overlap, is trim too large?")
 
     # xarray deals well with time interpolation, so we make a DataArray first and interpolate that
     s1 = DataArray(data = f1, dims = 'time', coords = {'time' : t1})
@@ -107,6 +109,7 @@ def _plot_signals(s1,s2, title, s1_label = 'f1', s2_label = 'f2'):
         plt.grid()
         plt.title('zoomed')
         plt.legend()
+        plt.tight_layout()
         plt.show()
     else:
         s1.plot(label = s1_label)
