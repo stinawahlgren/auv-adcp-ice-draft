@@ -1,14 +1,13 @@
 import numpy as np
 import pandas as pd
 import gsw
-import glob
 import matplotlib.pyplot as plt
 from scipy.stats import binned_statistic
 from scipy.optimize import curve_fit
 from scipy.integrate import quad as scipy_integrate_quad
 from more_itertools import ilen, always_iterable
 
-from depth_pressure_conversions import pressure_from_depth
+from depth_pressure_conversions import pressure_from_depth, read_ctd_data
 
 def sound_speed_in_DIS_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  make_plot = True):
     """
@@ -86,9 +85,7 @@ def is_inside_cavity(ds):
     return crit1 & crit2 
 
 def sound_speed_from_ctd(filename = 'data/auxiliary/CTD/CTD_NBP2202_*.txt'):
-    ctd_files = glob.glob(filename)
-    ctd_data_list = [pd.read_csv(f) for f in ctd_files]
-    ctd_data = pd.concat(ctd_data_list, axis=0, ignore_index = True)
+    ctd_data = read_ctd_data(filename)
     return pd.DataFrame({'c' : gsw.sound_speed(ctd_data['AbsSal (g/kg)'], 
                                                ctd_data['ConsTemp (deg)'], 
                                                ctd_data['Pressure (dB)']),

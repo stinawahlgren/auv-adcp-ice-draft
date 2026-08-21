@@ -63,7 +63,7 @@ def read_ctd_data(filename = 'data/auxiliary/CTD/CTD_NBP2202_*.txt'):
     """
     Load provided csv-files as a pandas.DataFrame
     """
-    ctd_files = glob(filename)
+    ctd_files = list_of_files(filename)
     ctd_data_list = [read_csv(f) for f in ctd_files]
     return concat(ctd_data_list, axis=0, ignore_index = True)
 
@@ -114,3 +114,24 @@ def dyn_height_profile(ctd_data, SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p
     dyn_height = geo_strf_dyn_height(df['SA'], df['CT'], df['p'], p_ref = 0)
 
     return DataArray(data = dyn_height, dims = 'p', coords = {'p':p})
+
+
+def list_of_files(filenames):
+    """
+    Returns a list of files matching the input
+
+    Example usage:
+    >>> list_of_files('path/to/files/*.csv')
+    ['path/to/files/file1.csv', 'path/to/files/file2.csv']
+    
+    >>> list_of_files(['path/to/files/*.csv', 'otherfile.txt'])
+    ['path/to/files/file1.csv', 'path/to/files/file2.csv', 'otherfile.txt']
+    """
+    if type(filenames) in (list,tuple):
+        file_list = []
+        for filename in filenames:
+            for f in glob(filename):
+                file_list.append(f)
+    else:
+        file_list = glob(filenames)
+    return file_list
