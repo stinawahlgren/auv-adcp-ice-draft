@@ -4,9 +4,11 @@ import numpy as np
 from glob import glob
 from gsw import geo_strf_dyn_height, z_from_p, p_from_z
 from scipy.stats import binned_statistic
+import matplotlib.pyplot as plt
 
 def compute_dynamic_height_profile(ctd_files = 'data/auxiliary/CTD/CTD_NBP2202_*.txt', 
-                                   SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)'):
+                                   SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)',
+                                   make_plots = False):
     """
     Computes gesostrophic dynamical height (referenced at p=0) as a function of pressure, based on 
     mean profiles of  conservative temperature and absolute salinity. Data is taken from the specified ctd-files
@@ -23,7 +25,7 @@ def compute_dynamic_height_profile(ctd_files = 'data/auxiliary/CTD/CTD_NBP2202_*
     xarray.DataArray with dynamical height as a function of pressure.
     """
     ctd_data = read_ctd_data(ctd_files)
-    return dyn_height_profile(ctd_data, SA = SA, CT = CT, p = p)
+    return dyn_height_profile(ctd_data, SA = SA, CT = CT, p = p, make_plots = make_plots)
 
 
 def depth_from_pressure(p, lat=-74, dynamic_height_profile = None, p_dim = 'p'):
@@ -81,7 +83,7 @@ def mean_profile(data, var, p, bins):
     return (values, ps)
 
 
-def dyn_height_profile(ctd_data, SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)'):
+def dyn_height_profile(ctd_data, SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)', make_plots = False):
     """
     Computes gesostrophic dynamical height (referenced at p=0) as a function of pressure, based on 
     mean profiles of  conservative temperature and absolute salinity.
@@ -100,20 +102,43 @@ def dyn_height_profile(ctd_data, SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p
     
     # Compute mean profiles of conservative temperature and absoulte salinity
     bin_size = 1
-    bins = np.arange(5,np.max(ctd_data['Pressure (dB)']),bin_size)
-    (SA,p) = mean_profile(ctd_data, 'AbsSal (g/kg)', 'Pressure (dB)', bins)
-    (CT,p) = mean_profile(ctd_data, 'ConsTemp (deg)', 'Pressure (dB)', bins)
+    bins = np.arange(5,np.max(ctd_data[p]),bin_size)
+    (SAs,ps) = mean_profile(ctd_data, SA, p, bins)
+    (CTs,ps) = mean_profile(ctd_data, CT, p, bins)
 
     # Replace nan with lineraly interpolated values
-    df = DataFrame({'p' : p,
-                    'SA':SA,
-                    'CT':CT})
+    df = DataFrame({'p' : ps,
+                    'SA':SAs,
+                    'CT':CTs})
     df = df.interpolate()
 
     # Compute dynamic height
     dyn_height = geo_strf_dyn_height(df['SA'], df['CT'], df['p'], p_ref = 0)
 
-    return DataArray(data = dyn_height, dims = 'p', coords = {'p':p})
+    if make_plots:
+        fig,axes = plt.subplots(1,3,figsize=(8,4), sharey=True)
+        
+        # plot CT
+        ctd_data.plot.scatter(x=CT, y=p, s=1, ax=axes[0], label = 'CTD data')
+        axes[0].plot(CTs, ps, 'k', label = 'mean profile', linewidth=0.5)
+        axes[0].legend(loc='lower left')
+        axes[0].grid(alpha=0.1)
+        
+        # plot SA
+        ctd_data.plot.scatter(x=SA, y=p, s=1, ax=axes[1], label = 'CTD data')
+        axes[1].plot(SAs, ps, 'k', label = 'mean profile', linewidth=0.5)
+        axes[1].legend(loc='lower left')
+        axes[1].grid(alpha=0.1)
+        
+        # plot dynamical height 
+        axes[2].plot(dyn_height, ps, 'k')
+        axes[2].set_xlabel('dynamical height')
+        axes[2].grid(alpha=0.1)
+        
+        axes[0].yaxis.set_inverted(True)
+        plt.tight_layout()
+
+    return DataArray(data = dyn_height, dims = 'p', coords = {'p':ps})
 
 
 def list_of_files(filenames):

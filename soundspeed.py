@@ -7,29 +7,43 @@ from scipy.optimize import curve_fit
 from scipy.integrate import quad as scipy_integrate_quad
 from more_itertools import ilen, always_iterable
 
-from depth_pressure_conversions import pressure_from_depth, read_ctd_data
+from depth_pressure_conversions import pressure_from_depth, read_ctd_data, mean_profile
 
-def sound_speed_in_DIS_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  make_plot = True):
+def sound_speed_in_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  cavity_criterion = 'Dotson', make_plot = True,
+                          SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)', 
+                          lat = 'Latitude (deg)', lon = 'Longitude (deg)'):
     """
-    Returns a logarithmic fit to the mean profile of measured sound speeds inside DIS
+    Returns a logarithmic fit to the mean profile of sound speed from CTD data
+
+    Parameters:
+        cavity_criterion : If given, only uses selected data to compute fit.
+                           Options: 
+                               'Dotson' : Data from Dotson ice shelf cavity (based on lon/lat)
+                               'p200'   : Only use sound speed from depth deeper than 200 dBar
+                               None     : Use all available data
     """
     def sound_speed_model(log_p, a, b):
         return a*log_p + b
     
     # Load CTD data
-    sound_speed_all = sound_speed_from_ctd(filename = files)
-    inside_cavity = is_inside_cavity(sound_speed_all)
+    sound_speed_all = sound_speed_from_ctd(filename = files, SA=SA, CT=CT, p=p, lat=lat, lon=lon)
+
+    if cavity_criterion == 'Dotson':
+        inside_cavity = is_inside_Dotson_cavity(sound_speed_all)
+        sound_speed_used = sound_speed_all.where(inside_cavity)
+    elif cavity_criterion == 'p200':
+        inside_cavity = sound_speed_all.p>200
+        sound_speed_used = sound_speed_all.where(inside_cavity)
+    else:
+        sound_speed_used = sound_speed_all
 
     # Compute mean profile
     bin_size = 10
-    p = sound_speed_all.where(inside_cavity).p
-    bins = np.arange(np.min(p),np.max(p),bin_size)
-    res  = binned_statistic(p,
-                            sound_speed_all.where(inside_cavity).c,
-                            statistic='mean', 
-                            bins= bins)
-    sound_speed_profile  = pd.DataFrame({'p' : (bins[:-1]+bins[1:])/2,
-                                         'c' : res.statistic})
+    bins = np.arange(np.min(sound_speed_used.p),np.max(sound_speed_used.p),bin_size)
+    (c, p) = mean_profile(sound_speed_used, var = 'c', p = 'p', bins=bins)
+    sound_speed_profile  = pd.DataFrame({'p' : p,
+                                         'c' : c})
+    
     # Fit to model
     popt, pcov = curve_fit(sound_speed_model, 
                            np.log(sound_speed_profile.p), 
@@ -52,9 +66,13 @@ def sound_speed_in_DIS_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  ma
     # Make figure
     if make_plot:
         # Plot all measurements
-        plt.scatter(sound_speed_all.where(inside_cavity).c,
-                    sound_speed_all.where(inside_cavity).p,
-                    s=1, c='silver', label = 'measurements')
+        plt.scatter(sound_speed_all.c,
+                    sound_speed_all.p,
+                    s=1, c='silver', label = 'all measurements')
+        # Plot used measurements
+        plt.scatter(sound_speed_used.c,
+                    sound_speed_used.p,
+                    s=1, c='tab:blue', label = 'used measurements')
         
         # Plot mean profile
         ylim = plt.ylim()
@@ -69,13 +87,13 @@ def sound_speed_in_DIS_cavity(files ='data/auxiliary/CTD/CTD_NBP2202_*.txt',  ma
         plt.xlim(xlim)
         plt.xlabel('speed of sound (m/s)')
         plt.ylabel('pressure (dbar)')
-        plt.title('Speed of sound inside DIS cavity')
+        plt.title('Sound speed profile')
         plt.legend()
         plt.grid(alpha=0.2)       
 
     return sound_speed_profile_model   
 
-def is_inside_cavity(ds):
+def is_inside_Dotson_cavity(ds):
     lon1 = -113.4
     lon2 = -112.75
     lat1 = -74.18
@@ -84,15 +102,16 @@ def is_inside_cavity(ds):
     crit2 = ds.lat < [max(lat2, x) for x in lat1 + (lat2-lat1)/(lon2-lon1)*(ds.lon.values -lon1)] #south of limit
     return crit1 & crit2 
 
-def sound_speed_from_ctd(filename = 'data/auxiliary/CTD/CTD_NBP2202_*.txt'):
+def sound_speed_from_ctd(filename = 'data/auxiliary/CTD/CTD_NBP2202_*.txt', 
+                         SA = 'AbsSal (g/kg)', CT =  'ConsTemp (deg)', p = 'Pressure (dB)',
+                         lat = 'Latitude (deg)', lon = 'Longitude (deg)'):
     ctd_data = read_ctd_data(filename)
-    return pd.DataFrame({'c' : gsw.sound_speed(ctd_data['AbsSal (g/kg)'], 
-                                               ctd_data['ConsTemp (deg)'], 
-                                               ctd_data['Pressure (dB)']),
-                         'p' : ctd_data['Pressure (dB)'],
-                         'lon' : ctd_data['Longitude (deg)'],
-                         'lat' : ctd_data['Latitude (deg)'],
-                         'time' : pd.to_datetime(ctd_data['Time (Matlab format)']-719529,unit='D')
+    return pd.DataFrame({'c' : gsw.sound_speed(ctd_data[SA], 
+                                               ctd_data[CT], 
+                                               ctd_data[p]),
+                         'p' : ctd_data[p],
+                         'lon' : ctd_data[lon],
+                         'lat' : ctd_data[lat],
                         }).dropna(axis=0)
 
 def sound_speed_harmonic_mean(depth1, depth2, profile, N=10):  
