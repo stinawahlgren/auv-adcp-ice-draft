@@ -1,7 +1,7 @@
 # Mapping the ice draft of Dotson Ice Shelf with a long-range ADCP on an autonomous underwater vehicle
 *Authors: S.Wahlgren, A. Wåhlin, K. J. Heywood*
 
-This is a repository for the data analysis performed in  Wahlgren, S., Wåhlin, A. & Heywood, K. J (2026). Mapping the ice draft of Dotson Ice Shelf with a long-range ADCP on an autonomous underwater vehicle. *Journal of Atmospheric and Oceanic Technology*. [in review]
+This is a repository for the data analysis performed in  Wahlgren, S., Wåhlin, A. & Heywood, K. J (2026). Mapping the ice draft of Dotson Ice Shelf with a long-range ADCP on an autonomous underwater vehicle. *Journal of Atmospheric and Oceanic Technology*. https://doi.org/10.1175/JTECH-D-25-0075.1
 
 ## Summary
 A method is presented whereby the echo intensity from a long-range ADCP, mounted on an autonomous vehicle moving in a seabed-following mission beneath an Antarctic ice shelf, is used to produce a high resolution map of the ice base. The method provides a new data stream for ice base morphology, and can be obtained at lower risk compared to ice-following missions.  
@@ -32,11 +32,11 @@ ADCP echo intensity can be downloaded from https://doi.org/10.5878/w1mp-x897 The
 
 ### data/auxiliary
 
-- **data/auxiliary/multibeam:** Multibeam-derived ice draft maps can be downloaded from https://doi.org/10.5878/349w-b176 The following files are used:
+- **data/auxiliary/multibeam:** Multibeam-derived ice draft maps can be downloaded from https://researchdata.se/en/catalogue/dataset/2024-143 The following files are used:
   - NBP2202_09_10m.txt
   - NBP2202_14_10m.txt
 
-- **data/auxiliary/CTD:** CTD data from  Hugin AUV missions in the Dotson Ice Shelf region during the NBP2202 Amundsen Sea expedition can be downloaded from https://doi.org/10.5878/349w-b176 The following AUV mission are from the Dotson Ice Shelf region:
+- **data/auxiliary/CTD:** CTD data from  Hugin AUV missions in the Dotson Ice Shelf region during the NBP2202 Amundsen Sea expedition can be downloaded from https://researchdata.se/en/catalogue/dataset/2024-143 The following AUV mission are from the Dotson Ice Shelf region:
   - NBP2202_002
   - NBP2202_003
   - NBP2202_004

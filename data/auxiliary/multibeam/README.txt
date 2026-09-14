@@ -1,4 +1,4 @@
-Multibeam-derived ice draft can be downloaded from https://doi.org/10.5878/349w-b176
+Multibeam-derived ice draft can be downloaded from https://researchdata.se/en/catalogue/dataset/2024-143
 
 W1 : NBP2202_09_10m.txt
 W3 : NBP2202_14_10m.txt

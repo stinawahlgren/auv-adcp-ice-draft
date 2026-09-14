@@ -1,4 +1,4 @@
-CTD data from  Hugin AUV missions in the Dotson Ice Shelf region during the NBP2202 Amundsen Sea expedition can be downloaded from https://doi.org/10.5878/349w-b176 
+CTD data from  Hugin AUV missions in the Dotson Ice Shelf region during the NBP2202 Amundsen Sea expedition can be downloaded from https://researchdata.se/en/catalogue/dataset/2024-143
 
 The following AUV mission are from the Dotson Ice Shelf region:
 NBP2202_002
